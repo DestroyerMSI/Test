@@ -1,0 +1,43 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    // File Layout
+    //"rootDir": "./",
+    "outDir": "./dist",
+
+    // Environment Settings
+    // See also https://aka.ms/tsconfig/module
+    "module": "esnext",
+    "target": "esnext",
+    // For nodejs:
+    "lib": ["esnext"], // debi activar este y el modulo en esnext para que reconozca que sea compatible con el modulejs sino da error pq esta adaptado al commonjs
+   "types": ["node"],
+   "allowImportingTsExtensions": true, // esto es para poder importar archivos .ts ya que es necesario poner el tipo de archivo
+  "emitDeclarationOnly": true, //allowImportingTsExtensions pide esta activacion pero esto emite la compilacion al hacer el npx tsc de los archivos ts a js es decir que a la hora de hacer el build hay q ponerlo a false  
+    // Other Outputs
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    // Stricter Typechecking Options
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    // Style Options
+    // "noImplicitReturns": true,
+    // "noImplicitOverride": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    // "noFallthroughCasesInSwitch": true,
+    // "noPropertyAccessFromIndexSignature": true,
+
+    // Recommended Options
+    "strict": true,
+    "jsx": "react-jsx",
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+  }
+}
