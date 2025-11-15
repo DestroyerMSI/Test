@@ -1,107 +1,57 @@
-import * as readline from "readline-sync"; //Aqui tuve que cambiar en el tsconfig el a esnext porque me estaba reconociendo el proyecto basado en el commonjs
-
-// Aqui creo el tipo de interface que va a tener el argumento que le llegara por parametro al Actions
-interface InterfaceAccount_Params {
+//Defino el tipo de Account
+interface Account {
   accountId: string;
-  account: number;
-  type: "deposit" | "withdraw";
+  balance: number;
+  version: number;
 }
+// Aqui creo un diccionario con el new Map y le digo q tendra una interfaz de string y como el interface de Account
+const accounts = new Map<string, Account>();
+//Guardos los valores en las distintas propiedades del objecto utilizando como clave el "12345" que es el id
+accounts.set("12345", { accountId: "12345", balance: 1000, version: 0 });
+
 
 export class Actions {
-  // Esto lo hago para declarar el params del constructor esto es obligatorio en ts en js no habria que ponerlo
-  params: InterfaceAccount_Params;
+  // Aqui declaro el tipo del params que le va a llegar al constructor por el constructor
+  params: { accountId: string; account: number; type: "deposit" | "withdraw" };
+// El constructor sirve para a una clase se le pueda hacer llegar un argumento por parametro al crear una nueva instancia
+  constructor({params}: {params: {accountId: string;account: number;type: "deposit" | "withdraw";};}) {
+    this.params = params;
+  }
+   
+  // Aqui creo el metodo RechargeConcurrent que es la funcion para poder Recargar le digo que el parametro sera una promesa ya que debe esperar ese valor antes de iniciar el Promese sirve para decir que la funcion debe esperar retornar un valor con este tipo de interface que puse Account
+  async RechargeConcurrent(accountId: string,amount: number,maxRetries = 5): Promise<Account> {
+    return this.updateAccountBalance(accountId, amount, "deposit", maxRetries);
+  }
+// Aqui creo el metodo WithdrawConcurrent que es la funcion para poder Retirar 
+  async WithdrawConcurrent(accountId: string,amount: number,maxRetries = 5): Promise<Account> {
+    return this.updateAccountBalance(accountId, amount, "withdraw", maxRetries);
+  }
+// Al poner privado el metodo esto significa que nada mas se podra usar dentro de la clase
+private async updateAccountBalance(accountId: string,amount: number,type: "deposit" | "withdraw",maxRetries: number
+): Promise<Account> {
+  // Esto se utiliza para un un diccionario la propiedad get sirve para devolver la cuenta al ingresar el valor del id 
+  const acc = accounts.get(accountId);
 
-  //Esto lo creo para que la clase Action pueda resivir un parametro al crear un nueva instancia con la clase
-  constructor({ params }: { params: InterfaceAccount_Params }) {
-    this.params = params as InterfaceAccount_Params;
+  if (!acc) throw new Error("Cuenta no encontrada");
+
+  const values = type === "deposit" ? amount : -amount;
+  const projected = acc.balance + values;
+
+  // Aqui verifico si la cuenta no queda en negativo antes de actualizarla
+  if (projected < 0) {
+    throw new Error("Saldo insuficiente");
   }
 
-  Recharge = () => {
-    let action = true as boolean;
-    let quantity: number = this.params.account;
-    console.log(`Saldo disponible es de ${quantity}`);
-    while (action) {
-      const quantity_add = readline.question("¿Cuanto deseas depositar? \n");
-      const new_quantity_add = quantity_add.trim();
+  const expectedVersion = acc.version;
 
-      if (Number(new_quantity_add)) {
-        quantity += Number(new_quantity_add);
-        console.log(
-          `Cantidad depositada: ${new_quantity_add}\nTotal actual: ${quantity}\n`
-        );
+  acc.balance = projected;
+  acc.version = expectedVersion + 1;
+  accounts.set(accountId, acc);
 
-        const action_repeat = readline.question(
-          "Deseas seguir depositando teclee 1 o si deseas salir 0? \n"
-        );
-        const new_action_repeat = action_repeat.trim();
+  console.log(`Operación ${type} aplicada. Nuevo saldo: ${acc.balance}`);
+  return acc;
+}
 
-        const parsed = Number(new_action_repeat);
-        if (!isNaN(parsed)) {
-          switch (parsed) {
-            case 0:
-              action = false;
-              break;
-            case 1:
-              break;
-            default:
-              console.log("Por favor teclee una opción válida.\n");
-              break;
-          }
-        } else {
-          console.log("Por favor teclee una opción válida.\n");
-        }
-      } else {
-        console.log("Por favor teclee un número.\n");
-      }
-    }
-  };
 
-  Withdrawal = () => {
-    let action = true as boolean;
-    let quantity: number = this.params.account;
 
-    console.log(`Saldo disponible es de ${quantity}`);
-    while (action) {
-      const entrance = readline.question(
-        "Por favor teclee la cantidad extraer. \n"
-      );
-      const new_entrance = entrance.replace(" ", ""); // Elimine los espacios de las dos formas con el trim q es para eliminar los espacios y el remplace que remplaza un caracter por otro dado y en una cadena de string un espacio(' ') es un caracter
-      const number_entrance = Number(new_entrance);
-      if (number_entrance) {
-        const verify = quantity - number_entrance >= 0;
-        if (verify) {
-          quantity -= number_entrance;
-          console.log(`Saldo total es de ${quantity}`);
-          const action_repeat = readline.question(
-            "Deseas seguir retirando teclee 1 o si deseas salir 0? \n"
-          );
-          const new_action_repeat = action_repeat.replace(" ", "");
-
-          const parsed = Number(new_action_repeat);
-          if (!isNaN(parsed)) {
-            // Esto es para verificar que no es NAN q es una operacion matematica no valida
-            switch (parsed) {
-              case 0:
-                action = false; // aqui que termine de iterar el bucle while
-                break;
-              case 1:
-                break;
-              default:
-                console.log("Por favor teclee una opción válida.\n");
-                break;
-            }
-          } else {
-            console.log("Por favor teclee una opción válida.\n");
-          }
-        } else {
-          console.log(
-            "Lo sentimos no cuenta con esa cantidad de dinero disponible. \n Saldo actual: ",
-            quantity
-          );
-        }
-      } else {
-        console.log("Por favor debes de ingresar un numero. \n");
-      }
-    }
-  };
 }

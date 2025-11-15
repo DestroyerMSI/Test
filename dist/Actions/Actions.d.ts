@@ -1,15 +1,24 @@
-interface InterfaceAccount_Params {
+interface Account {
     accountId: string;
-    account: number;
-    type: "deposit" | "withdraw";
+    balance: number;
+    version: number;
 }
 export declare class Actions {
-    params: InterfaceAccount_Params;
+    params: {
+        accountId: string;
+        account: number;
+        type: "deposit" | "withdraw";
+    };
     constructor({ params }: {
-        params: InterfaceAccount_Params;
+        params: {
+            accountId: string;
+            account: number;
+            type: "deposit" | "withdraw";
+        };
     });
-    Recharge: () => void;
-    Withdrawal: () => void;
+    RechargeConcurrent(accountId: string, amount: number, maxRetries?: number): Promise<Account>;
+    WithdrawConcurrent(accountId: string, amount: number, maxRetries?: number): Promise<Account>;
+    private updateAccountBalance;
 }
 export {};
 //# sourceMappingURL=Actions.d.ts.map
